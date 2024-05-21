@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokerMini</title>
+    <link rel="stylesheet" href="pico.blue.min.css">
+    <link rel="stylesheet" href="flexboxgrid.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+    <main class="container">
+        <h1>Poker Mini</h1>
+        <% if (!game) { %>
+            <form action="/new-game" method="post">
+                <button type="submit">New game</button>
+            </form>
+        <% } else { %>
+            <div class="player-info">
+                <br><h3>Joueur</h3>
+                <p>Nombre de jetons: <%= game.balances.human %></p>
+                <p>Mise en cours: <%= game.hand.bets.human %></p>
+            </div>
+            <div class="player-info">
+                <h3>Bot</h3>
+                <p>Nombre de jetons: <%= game.balances.bot %></p>
+                <p>Mise en cours: <%= game.hand.bets.bot %></p>
+            </div>
+            <div class="player-info">
+                <h3>Pot</h3>
+                <p><%= game.hand.pot %></p>
+            </div>
+            <% if (!!hand) { %>
+                <div class="hand row">
+                    <article class="col">
+                        <span class="card card1"><%= hand[0].rank %> <%= hand[0].suit %></span>
+                    </article>
+                    <article class="col">
+                        <span class="card card2"><%= hand[1].rank %> <%= hand[1].suit %></span>
+                    </article>
+                    <% if (game.hand.stage === "turn2") { %>
+                        <article class="col">
+                            <span class="card card3"><%= hand[2].rank %> <%= hand[2].suit %></span>
+                        </article>
+                    <% } %>
+                </div>
+            <% } %>
+            <% if (game.hand.currentPlayer === "human") { %>
+                <div class="actions">
+                    <form action="/play" method="post" class="row">
+                        <fieldset class="grid">
+                            <% if (game.hand.isBotRaised === false && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) { %>
+                                <button class="col" type="submit" name="action" value="check">Check</button>
+                                <div class="grid">
+                                    <input class="col" type="number" name="amount" value="1">
+                                    <button class="col" type="submit" name="action" value="bet">Bet</button>
+                                </div>
+                                <button class="col" type="submit" name="action" value="fold">Fold</button>
+                            <% } %>
+                            <% if (game.hand.isBotRaised === true && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) { %>
+                                <button class="col" type="submit" name="action" value="call">Call</button>
+                                <button class="col" type="submit" name="action" value="fold">Fold</button>
+                            <% } %>
+                            <% if (game.hand.currentPlayer === "bot") { %>
+                                <button class="col" type="submit" name="action" value="raise">Raise</button>
+                            <% } %>
+                            
+                            <% if (game.hand.stage === "showDown") { %>
+                                <button class="col" type="submit" name="action" value="show">Show</button>
+                            <% } %>
+                            <% if (game.hand.stage === "endRound") { %>
+                                <button class="col" type="submit" name="action" value="next">Next</button>
+                            <% } %>
+                            
+                            
+                        </fieldset>
+                    </form>
+                </div>
+            <% } else { %>
+                <p>waiting for bot...</p>
+                <script>
+                    const id = setInterval(() => {
+                        fetch("/game-status")
+                            .then(res => res.json())
+                            .then(game => {
+                                if (game.hand.currentPlayer === "human") {
+                                    clearInterval(id);
+                                    location.reload();
+                                }
+                            });
+                    }, 500);
+                </script>
+            <% } %>
+            <% if (game.result) { %>
+                <div id="popup" class="popup">
+                    <h2>Winner of the Round is <%= game.result %></h2>
+                </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+                        const popup = document.getElementById("popup");
+                        if (popup) {
+                            setTimeout(() => {
+                                popup.style.display = "none";
+                            }, 1000); 
+                        }
+                    });
+                </script>
+            <% } %>
+            <% if (game.winner) { %>
+                <div class="popup">
+                    <h2>Winner of the game is <%= game.winner %></h2>
+                    <form action="/new-game" method="post">
+                        <button type="submit">New game</button>
+                    </form>
+                </div>
+            <% } %>
+        <% } %>       
+    </main>
+</body>
+</html>
