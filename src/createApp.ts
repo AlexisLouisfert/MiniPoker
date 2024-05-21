@@ -62,7 +62,23 @@ export function createApp() {
     }
 
     handleAction(req, res, game, hands, game.deck);
-
+    // if(req.body.action === "fold" || game.hand.stage === "endRound"){
+    //   hands = {
+    //     human: [],
+    //     bot: [],
+    //   };
+    //   game = createNewRound();
+      
+      
+    //   // Ante bet
+    //   ante(game)
+  
+    //   game.hand.stage = "turn1";
+    //   game.deck = createDeck();
+    //   dealCards(game, hands, createDeck());
+    //   console.log("new game")
+    //   res.redirect("/");
+    // }
   });
 
   return app;

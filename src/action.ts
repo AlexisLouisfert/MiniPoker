@@ -52,7 +52,7 @@ export function proceedToNextStage(game: any, hands: any, deck: any) {
 export function handleAction(req: Request, res: Response, game: any, hands: any, deck: any) {
     const action = req.body.action;
     
-     if (action === "bet" && game.hand.isBotRaised === false && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) {
+     if (action === "bet" && game.hand.isBotRaised === false && (game.hand.stage === "turn1" || game.hand.stage === "turn2") && game.balances.human > 0) {
       const amount = parseInt(req.body.amount || "1");
       game.hand.bets.human += amount;
       game.balances.human -= amount; 
@@ -64,21 +64,31 @@ export function handleAction(req: Request, res: Response, game: any, hands: any,
           game.hand.pot += game.hand.bets.human;
           game.hand.pot += game.hand.bets.bot;
           game.balances.human += game.hand.pot;
-          game.hand.bets.human = 0;
-          game.hand.bets.bot = 0;
           console.log("bot fold")
           showPopup('Winner of the round is Human');
           game.result="Joueur";
           endGame(game);
-          resetHand(game);
-        } else if (botAction === "call" && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) {
-          game.hand.bets.bot += game.hand.bets.human;
-          game.balances.bot -= game.hand.bets.human;
-          game.hand.pot += game.hand.bets.human * 2;
-          game.hand.bets.human = 0;
-          game.hand.bets.bot = 0;
-          console.log("bot call")
-          proceedToNextStage(game, hands, deck);
+          if (!game.winner){
+            resetHand(game);
+          }
+        } else if (botAction === "call" && (game.hand.stage === "turn1" || game.hand.stage === "turn2") && game.balances.bot > 0 ){
+            if(game.balances.bot === 0 || game.balances.bot < 0){
+              if(game.balances.bot < 0){
+                console.log("bot call 1.5")
+                game.balances.bot = 0;
+              } 
+              console.log("bot call 1")
+              game.hand.bets.bot += game.balances.bot;
+              game.balances.bot = 0;
+              game.hand.pot += game.hand.bets.bot;
+              game.hand.pot += game.hand.bets.human;
+            } else{
+              console.log("bot call 2")
+              game.hand.bets.bot += game.hand.bets.human;
+              game.balances.bot -= game.hand.bets.human;
+              game.hand.pot += game.hand.bets.human * 2;
+            }
+            proceedToNextStage(game, hands, deck);
         } else if (botAction === "raise" && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) {
           const botRaiseAmount = 2; 
           game.hand.bets.bot += game.hand.bets.human + botRaiseAmount;
@@ -95,7 +105,7 @@ export function handleAction(req: Request, res: Response, game: any, hands: any,
       game.hand.currentPlayer = "bot";
       setTimeout(() => {
         const botAction = botPlay(0);
-        if (botAction === "raise" && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) {
+        if (botAction === "raise" && (game.hand.stage === "turn1" || game.hand.stage === "turn2") && game.hand.bets.human < game.balances.bot && game.balances.bot>1 ) {
           console.log("bot raise")
           const botRaiseAmount = 2;
           game.hand.bets.bot += game.hand.bets.human + botRaiseAmount;
@@ -109,12 +119,27 @@ export function handleAction(req: Request, res: Response, game: any, hands: any,
         res.redirect("/");
       }, 5000);
     } else if (action === "call" && game.hand.isBotRaised === true && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) {
-        console.log("human call")
-        game.hand.bets.human += game.hand.bets.bot;
-        game.balances.human -= game.hand.bets.bot;
-        game.hand.pot += game.hand.bets.bot * 2;
-        game.hand.bets.human = 0;
-        game.hand.bets.bot = 0;
+        if(game.balances.human === 0 || game.balances.human < 0){
+          if(game.balances.human < 0){
+            console.log("human call 1.5")
+            game.balances.human = 0;
+          } 
+          console.log("human call 1")
+          game.balances.human += game.hand.bets.human;
+          game.hand.bets.human = 0;
+          game.hand.bets.human += game.balances.human;
+          game.balances.human = 0;
+          game.hand.pot += game.hand.bets.human;
+          game.hand.pot += game.hand.bets.bot;
+          
+        } else{
+          console.log("human call 2")
+          game.balances.human += game.hand.bets.human;
+          game.hand.bets.human = 0;
+          game.hand.bets.human += game.hand.bets.bot;
+          game.balances.human -= game.hand.bets.bot;
+          game.hand.pot += game.hand.bets.bot * 2;
+        }
         proceedToNextStage(game, hands, deck);
     } else if (action === "fold") {
         game.hand.pot += game.hand.bets.human;
@@ -125,7 +150,9 @@ export function handleAction(req: Request, res: Response, game: any, hands: any,
         showPopup('Winner of the round is Bot');
         game.result="Bot";
         endGame(game);
-        resetHand(game);
+        if (!game.winner){
+          resetHand(game);
+        }
         res.redirect("/");
     } else if (action === "show" && game.hand.stage === "showDown") { 
       console.log("show cards");  

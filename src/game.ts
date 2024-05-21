@@ -20,6 +20,26 @@ export function createNewGame(){
     
   };
 }
+// export function createNewRound(){
+//   let game : any
+//   return {
+//     balances: {
+//       human: game.balances.human,
+//       bot: game.balances.bot,
+//     },
+//     hand: {
+//       stage: "ante",  
+//       currentPlayer: "human",
+//       pot: 0,
+//       bets: {
+//         human: 0,
+//         bot: 0,
+//       },
+//       isBotRaised: false,
+//     },
+    
+//   };
+// }
 
 export function resetHand(game: any) {
 game.hand.stage = "ante";
@@ -30,6 +50,7 @@ game.hand.bets.bot = 0;
 game.hand.isBotRaised = false;
 ante(game);
 game.hand.stage = "turn1";
+game.deck= createDeck();
 console.log("new Round")
 }
 
@@ -53,7 +74,9 @@ export function determineWinner(game: any, hands: any) {
     showPopup('Winner of the round is Bot');
   }
   endGame(game)
-  resetHand(game);
+  if (!game.winner){
+    resetHand(game);
+  }
 }
 
 
@@ -92,10 +115,12 @@ export function botPlay(playerBet: number): string {
 }
 
 export function endGame(game: any) {
-  if (game.balances.human === 0) {
+  if (game.balances.human === 0 ||  (game.balances.human < 0 && game.hand.stage === "endRound")) {
+    game.hand.pot = 0;
     game.winner = "bot";
     showPopup('Winner of the game is Bot');
-  } else if (game.balances.bot === 0) {
+  } else if (game.balances.bot === 0 ||  (game.balances.bot < 0 && game.hand.stage === "endRound")) {
+    game.hand.pot = 0;
     game.winner = "Joueur";
     showPopup('Winner of the game is Joueur');
   } else {
