@@ -39,7 +39,7 @@
                     <article class="col">
                         <span class="card card2"><%= hand[1].rank %> <%= hand[1].suit %></span>
                     </article>
-                    <% if (game.hand.stage === "turn2") { %>
+                    <% if (game.hand.stage === "turn2" || game.hand.stage === "showDown" || game.hand.stage === "endRound") { %>
                         <article class="col">
                             <span class="card card3"><%= hand[2].rank %> <%= hand[2].suit %></span>
                         </article>
@@ -92,7 +92,7 @@
                     }, 500);
                 </script>
             <% } %>
-            <% if (game.result) { %>
+            <% if (game.result && game.hand.stage === "turn1") { %>
                 <div id="popup" class="popup">
                     <h2>Winner of the Round is <%= game.result %></h2>
                 </div>

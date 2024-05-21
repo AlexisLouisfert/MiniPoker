@@ -1,7 +1,7 @@
 import express from "express";
 import { createDeck } from "./deck";
 import { createNewGame, resetHand, determineWinner, dealCards, dealAdditionalCard, endGame, ante, showPopup, botPlay, showOpponentHand } from "./game";
-import session from "express-session";
+//import session from "express-session";
 import { handleAction, proceedToNextStage } from "./action";
 
 export function createApp() {
