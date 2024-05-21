@@ -20,13 +20,8 @@ export function createNewGame(){
     
   };
 }
-// export function createNewRound(){
-//   let game : any
+// export function createNewHand(){
 //   return {
-//     balances: {
-//       human: game.balances.human,
-//       bot: game.balances.bot,
-//     },
 //     hand: {
 //       stage: "ante",  
 //       currentPlayer: "human",

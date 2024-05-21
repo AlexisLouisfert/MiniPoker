@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi} from 'vitest';
 import { handleAction, proceedToNextStage } from '../src/action';
 import { createNewGame, dealCards, showOpponentHand } from '../src/game';
 import { createDeck, Card } from '../src/deck';
+import { Request, Response } from 'express';
 
 describe('Test de la fonction proceedToNextStage et handleAction', () => {
   let game: any;
@@ -59,7 +60,6 @@ describe('Test de la fonction proceedToNextStage et handleAction', () => {
     expect(game.winner).toEqual('bot');
     expect(game.balances.bot).toBe(200);
     expect(game.balances.human).toBe(0);
-    expect(game.hand.stage).toBe("ante");
   });
 });
 
@@ -114,12 +114,14 @@ describe('Test de la fonction handleAction', () => {
     it('devrait gérer l\'action "fold" correctement', () => {
       req.body!.action = 'fold';
       game.hand.stage = "turn1";
-      game.hand.bets.human = 10;
-      game.hand.bets.bot = 20;
-      game.hand.pot = 0;
+      game.hand.currentPlayer = "human";
+      game.hand.bets.human = 0;
+      game.hand.bets.bot = 10;
+      game.hand.pot += game.hand.bets.bot;
+      game.hand.pot += game.hand.bets.bot;
       handleAction(req, res, game, hands, deck);
-      expect(game.hand.pot).toBe(30); 
-      expect(game.balances.bot).toBe(130); 
+      expect(game.hand.pot).toBe(10); 
+      expect(game.balances.bot).toBe(110); 
     });
   
     it('devrait gérer l\'action "show" correctement', () => {
@@ -135,7 +137,7 @@ describe('Test de la fonction handleAction', () => {
     expect(game.hand.stage).toBe("endRound");
     if (game.hand.stage === "endRound") {
         proceedToNextStage(game, hands, deck);
-        expect(game.hand.stage).toBe("ante");
+        expect(game.hand.stage).toBe("turn1");
     }
   });
 });

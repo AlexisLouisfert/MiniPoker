@@ -15,7 +15,6 @@ export type Winner = {
 const rankOrder: { [key: string]: number } = { "9": 0, "T": 1, "J": 2, "Q": 3, "K": 4, "A": 5 };
 
 export function categorizeHand(cards: Card[]): Hand {
-    // trie les cartes par rang decroissant
     cards.sort((a, b) => rankOrder[a.rank] - rankOrder[b.rank]);
 
     if (isStraightFlush(cards)) {
@@ -76,15 +75,15 @@ export function compare(hand1: Hand, hand2: Hand): Winner {
     // Si les types de main sont les mêmes, utiliser les fonctions de comparaison spécifiques
     switch (hand1.type) {
         case "Straight-Flush":
-            return compareStraightFlushes(hand1.cards, hand2.cards);
+            return compareHands(hand1.cards, hand2.cards, "Straight-Flush");
         case "Straight":
-            return compareStraights(hand1.cards, hand2.cards);
+            return compareHands(hand1.cards, hand2.cards, "Straight");
         case "Flush":
-            return compareFlushes(hand1.cards, hand2.cards);
+            return compareHands(hand1.cards, hand2.cards, "Flush");
         case "Pair":
             return comparePairs(hand1.rank!, hand2.rank!);
         case "High-Card":
-            return compareHighCards(hand1.cards, hand2.cards);
+            return compareHands(hand1.cards, hand2.cards, "High-Card");
         default:
             // Par défaut, retourne Tie avec l'une des mains
             return { type: "Tie", cards: hand1.cards };
@@ -95,78 +94,24 @@ export function compareByRank(rank1: string, rank2: string): number {
     return rankOrder[rank1] - rankOrder[rank2];
 }
 
-function compareHighCards(cards1: Card[], cards2: Card[]): Winner {
-    // Trie les cartes par ordre décroissant de valeur
+function compareHands(cards1: Card[], cards2: Card[], type: any): Winner {
     const sortedCards1 = cards1.sort((a, b) => compareByRank(b.rank, a.rank));
     const sortedCards2 = cards2.sort((a, b) => compareByRank(b.rank, a.rank));
-
-    // Compare les cartes une par une jusqu'à ce qu'une différence soit trouvée
+    
     for (let i = 0; i < sortedCards1.length; i++) {
         const comparison = compareByRank(sortedCards1[i].rank, sortedCards2[i].rank);
         if (comparison !== 0) {
-            // Une différence a été trouvée, retourne le gagnant
-            return comparison > 0 ? { type: "High-Card", cards: cards1 } : { type: "High-Card", cards: cards2 };
+            return comparison > 0 ? { type, cards: cards1 } : { type, cards: cards2 };
         }
     }
-    // Si toutes les cartes sont égales, retourne l'une des mains
-    return { type: "Tie", cards: cards1 };
-}
-
-function compareStraights(cards1: Card[], cards2: Card[]): Winner {
-    // Trie les cartes par ordre décroissant de valeur
-    const sortedCards1 = cards1.sort((a, b) => compareByRank(b.rank, a.rank));
-    const sortedCards2 = cards2.sort((a, b) => compareByRank(b.rank, a.rank));
-
-    // Compare les cartes une par une
-    for (let i = 0; i < sortedCards1.length; i++) {
-        const comparison = compareByRank(sortedCards1[i].rank, sortedCards2[i].rank);
-        if (comparison !== 0) {
-            return comparison > 0 ? { type: "Straight", cards: cards1 } : { type: "Straight", cards: cards2 };
-        }
-    }
-    // Si toutes les cartes sont égales, retourne l'une des mains
-    return { type: "Tie", cards: cards1 };
-}
-
-function compareFlushes(cards1: Card[], cards2: Card[]): Winner {
-    // Trie les cartes par ordre décroissant de valeur
-    const sortedCards1 = cards1.sort((a, b) => compareByRank(b.rank, a.rank));
-    const sortedCards2 = cards2.sort((a, b) => compareByRank(b.rank, a.rank));
-
-    // Compare les cartes une par une
-    for (let i = 0; i < sortedCards1.length; i++) {
-        const comparison = compareByRank(sortedCards1[i].rank, sortedCards2[i].rank);
-        if (comparison !== 0) {
-            return comparison > 0 ? { type: "Flush", cards: cards1 } : { type: "Flush", cards: cards2 };
-        }
-    }
-    // Si toutes les cartes sont égales, retourne l'une des mains
-    return { type: "Tie", cards: cards1 };
-}
-
-function compareStraightFlushes(cards1: Card[], cards2: Card[]): Winner {
-    // Trie les cartes par ordre décroissant de valeur
-    const sortedCards1 = cards1.sort((a, b) => compareByRank(b.rank, a.rank));
-    const sortedCards2 = cards2.sort((a, b) => compareByRank(b.rank, a.rank));
-
-    // Compare les cartes une par une
-    for (let i = 0; i < sortedCards1.length; i++) {
-        const comparison = compareByRank(sortedCards1[i].rank, sortedCards2[i].rank);
-        if (comparison !== 0) {
-            return comparison > 0 ? { type: "Straight-Flush", cards: cards1 } : { type: "Straight-Flush", cards: cards2 };
-        }
-    }
-    // Si toutes les cartes sont égales, retourne l'une des mains
     return { type: "Tie", cards: cards1 };
 }
 
 function comparePairs(rank1: any, rank2: any): any {
-    // Compare les valeurs des paires
     const pairComparison = compareByRank(rank1, rank2);
     if (pairComparison !== 0) {
         return pairComparison > 0 ? { type: "Pair", rank: rank1} : { type: "Pair", rank: rank2 };
     }
-    // Si les paires sont de même valeur, retourne l'une des mains
     return { type: "Pair", rank: rank1 };
 }
 

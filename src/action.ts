@@ -61,15 +61,16 @@ export function handleAction(req: Request, res: Response, game: any, hands: any,
       setTimeout(() => {
         const botAction = botPlay(game.hand.bets.human);
         if (botAction === "fold" && (game.hand.stage === "turn1" || game.hand.stage === "turn2")) {
+          console.log("bot fold")
           game.hand.pot += game.hand.bets.human;
           game.hand.pot += game.hand.bets.bot;
           game.balances.human += game.hand.pot;
-          console.log("bot fold")
           showPopup('Winner of the round is Human');
           game.result="Joueur";
           endGame(game);
           if (!game.winner){
             resetHand(game);
+            console.log("bot fold and resetHand")
           }
         } else if (botAction === "call" && (game.hand.stage === "turn1" || game.hand.stage === "turn2") && game.balances.bot > 0 ){
             if(game.balances.bot === 0 || game.balances.bot < 0){

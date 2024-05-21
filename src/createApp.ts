@@ -67,7 +67,7 @@ export function createApp() {
     //     human: [],
     //     bot: [],
     //   };
-    //   game = createNewRound();
+    //   game = createNewHand();
       
       
     //   // Ante bet
@@ -76,19 +76,10 @@ export function createApp() {
     //   game.hand.stage = "turn1";
     //   game.deck = createDeck();
     //   dealCards(game, hands, createDeck());
-    //   console.log("new game")
+    //   console.log("new hand")
     //   res.redirect("/");
     // }
   });
 
   return app;
 }
-
-
-
-
-
-
-
-
-
